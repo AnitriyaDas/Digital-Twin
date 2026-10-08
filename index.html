@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Campus Digital Twin</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #101820;
+            color: white;
+        }
+
+        /* HEADER */
+
+        header {
+            background: #17232c;
+            padding: 20px 30px;
+            border-bottom: 1px solid #394954;
+        }
+
+        header h1 {
+            font-size: 28px;
+        }
+
+        header p {
+            color: #9ca8b0;
+            margin-top: 5px;
+        }
+
+        /* DASHBOARD */
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1d2b35;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #34444f;
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #9ca8b0;
+        }
+
+        .card p {
+            font-size: 25px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .live {
+            color: #4ade80;
+        }
+
+        /* CAMPUS */
+
+        .campus {
+            position: relative;
+            height: 550px;
+            margin: 0 20px 20px;
+            background: #365a3d;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #445b63;
+        }
+
+        /* ROAD */
+
+        .road-horizontal {
+            position: absolute;
+            top: 70%;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: #333;
+        }
+
+        .road-vertical {
+            position: absolute;
+            left: 48%;
+            top: 0;
+            width: 80px;
+            height: 100%;
+            background: #333;
+        }
+
+        /* BUILDINGS */
+
+        .building {
+            position: absolute;
+            width: 180px;
+            height: 120px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            border: 3px solid white;
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-weight: bold;
+            text-align: center;
+
+            transition: 0.3s;
+
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+        }
+
+        .building:hover {
+            transform: scale(1.08);
+        }
+
+        .normal {
+            background: #258a4a;
+        }
+
+        .warning {
+            background: #d68b18;
+        }
+
+        .critical {
+            background: #c73a3a;
+        }
+
+        /* BUILDING POSITIONS */
+
+        #cse {
+            top: 60px;
+            left: 80px;
+        }
+
+        #ece {
+            top: 60px;
+            right: 80px;
+        }
+
+        #library {
+            bottom: 90px;
+            left: 80px;
+        }
+
+        #lab {
+            bottom: 90px;
+            right: 80px;
+        }
+
+        /* BUILDING PANEL */
+
+        .panel {
+            position: fixed;
+
+            top: 130px;
+            right: 30px;
+
+            width: 320px;
+
+            background: #17232c;
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            border: 1px solid #4a5b65;
+
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+
+            display: none;
+
+            z-index: 10;
+        }
+
+        .panel h2 {
+            margin-bottom: 20px;
+        }
+
+        .close {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+
+            background: none;
+            border: none;
+
+            color: white;
+
+            font-size: 20px;
+
+            cursor: pointer;
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+
+            padding: 12px 0;
+
+            border-bottom: 1px solid #394954;
+        }
+
+        .info span {
+            color: #9ca8b0;
+        }
+
+        /* PROGRESS BAR */
+
+        .progress {
+            margin-top: 20px;
+
+            height: 12px;
+
+            background: #333;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+
+            background: #4ade80;
+
+            width: 50%;
+
+            transition: width 0.5s;
+        }
+
+        /* LEGEND */
+
+        .legend {
+            position: absolute;
+
+            bottom: 15px;
+            left: 20px;
+
+            background: rgba(0,0,0,0.6);
+
+            padding: 10px 15px;
+
+            border-radius: 8px;
+        }
+
+        .legend span {
+            margin-right: 15px;
+        }
+
+        /* RESPONSIVE */
+
+        @media(max-width: 800px) {
+
+            .dashboard {
+                grid-template-columns: repeat(2,1fr);
+            }
+
+            .building {
+                width: 130px;
+                height: 90px;
+                font-size: 12px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+<header>
+
+    <h1>🏫 Campus Digital Twin</h1>
+
+    <p>
+        Real-Time Campus Monitoring & Simulation System
+    </p>
+
+</header>
+
+
+
+<!-- DASHBOARD -->
+
+<section class="dashboard">
+
+
+    <div class="card">
+
+        <h3>Total Buildings</h3>
+
+        <p id="totalBuildings">
+            4
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Total Occupancy</h3>
+
+        <p id="totalOccupancy">
+            0
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>Energy Usage</h3>
+
+        <p id="totalEnergy">
+            0 kWh
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h3>System Status</h3>
+
+        <p class="live">
+            ● LIVE
+        </p>
+
+    </div>
+
+
+</section>
+
+
+
+<!-- CAMPUS -->
+
+<section class="campus">
+
+
+    <!-- Roads -->
+
+    <div class="road-horizontal"></div>
+
+    <div class="road-vertical"></div>
+
+
+
+    <!-- Buildings -->
+
+    <div
+        id="cse"
+        class="building normal"
+        onclick="showBuilding('CSE Building')">
+
+        💻
+        <br>
+        CSE Building
+
+    </div>
+
+
+
+    <div
+        id="ece"
+        class="building normal"
+        onclick="showBuilding('ECE Building')">
+
+        ⚡
+        <br>
+        ECE Building
+
+    </div>
+
+
+
+    <div
+        id="library"
+        class="building normal"
+        onclick="showBuilding('Library')">
+
+        📚
+        <br>
+        Central Library
+
+    </div>
+
+
+
+    <div
+        id="lab"
+        class="building normal"
+        onclick="showBuilding('Innovation Lab')">
+
+        🤖
+        <br>
+        Innovation Lab
+
+    </div>
+
+
+
+    <!-- LEGEND -->
+
+    <div class="legend">
+
+        <span>🟢 Normal</span>
+
+        <span>🟠 High Occupancy</span>
+
+        <span>🔴 Critical</span>
+
+    </div>
+
+
+</section>
+
+
+
+<!-- INFORMATION PANEL -->
+
+<div
+    id="panel"
+    class="panel">
+
+
+    <button
+        class="close"
+        onclick="closePanel()">
+
+        ✕
+
+    </button>
+
+
+    <h2 id="buildingName">
+        Building
+    </h2>
+
+
+    <div class="info">
+
+        <span>Rooms</span>
+
+        <strong id="rooms">
+            -
+        </strong>
+
+    </div>
+
+
+    <div class="info">
+
+        <span>Capacity</span>
+
+        <strong id="capacity">
+            -
+        </strong>
+
+    </div>
+
+
+    <div class="info">
+
+        <span>Occupancy</span>
+
+        <strong id="occupancy">
+            -
+        </strong>
+
+    </div>
+
+
+    <div class="info">
+
+        <span>Temperature</span>
+
+        <strong id="temperature">
+            -
+        </strong>
+
+    </div>
+
+
+    <div class="info">
+
+        <span>Energy Usage</span>
+
+        <strong id="energy">
+            -
+        </strong>
+
+    </div>
+
+
+    <div class="progress">
+
+        <div
+            id="progressBar"
+            class="progress-bar">
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+/* ===========================
+   CAMPUS DATA
+=========================== */
+
+
+let buildings = {
+
+    "CSE Building": {
+
+        rooms: 12,
+
+        capacity: 300,
+
+        occupancy: 210,
+
+        temperature: 26.5,
+
+        energy: 42
+
+    },
+
+
+    "ECE Building": {
+
+        rooms: 10,
+
+        capacity: 250,
+
+        occupancy: 140,
+
+        temperature: 27.2,
+
+        energy: 35
+
+    },
+
+
+    "Library": {
+
+        rooms: 6,
+
+        capacity: 200,
+
+        occupancy: 175,
+
+        temperature: 25.8,
+
+        energy: 28
+
+    },
+
+
+    "Innovation Lab": {
+
+        rooms: 5,
+
+        capacity: 100,
+
+        occupancy: 82,
+
+        temperature: 26.1,
+
+        energy: 51
+
+    }
+
+};
+
+
+
+/* ===========================
+   SHOW BUILDING
+=========================== */
+
+
+function showBuilding(name) {
+
+
+    let building = buildings[name];
+
+
+    document.getElementById("panel").style.display = "block";
+
+
+    document.getElementById("buildingName").innerText = name;
+
+
+    document.getElementById("rooms").innerText =
+        building.rooms;
+
+
+    document.getElementById("capacity").innerText =
+        building.capacity;
+
+
+    document.getElementById("occupancy").innerText =
+        building.occupancy;
+
+
+    document.getElementById("temperature").innerText =
+        building.temperature.toFixed(1) + " °C";
+
+
+    document.getElementById("energy").innerText =
+        building.energy.toFixed(1) + " kWh";
+
+
+    let percentage =
+        (building.occupancy / building.capacity) * 100;
+
+
+    document.getElementById("progressBar").style.width =
+        percentage + "%";
+
+}
+
+
+
+/* ===========================
+   CLOSE PANEL
+=========================== */
+
+
+function closePanel() {
+
+    document.getElementById("panel").style.display =
+        "none";
+
+}
+
+
+
+/* ===========================
+   UPDATE DASHBOARD
+=========================== */
+
+
+function updateDashboard() {
+
+
+    let totalOccupancy = 0;
+
+    let totalEnergy = 0;
+
+
+    for (let name in buildings) {
+
+        totalOccupancy +=
+            buildings[name].occupancy;
+
+        totalEnergy +=
+            buildings[name].energy;
+
+    }
+
+
+    document.getElementById("totalOccupancy")
+        .innerText = totalOccupancy;
+
+
+    document.getElementById("totalEnergy")
+        .innerText =
+        totalEnergy.toFixed(1) + " kWh";
+
+}
+
+
+
+/* ===========================
+   SIMULATE LIVE DATA
+=========================== */
+
+
+function simulateSensors() {
+
+
+    for (let name in buildings) {
+
+
+        let building =
+            buildings[name];
+
+
+        /* Occupancy */
+
+        let change =
+            Math.floor(Math.random() * 11) - 5;
+
+
+        building.occupancy += change;
+
+
+        if (building.occupancy < 0) {
+
+            building.occupancy = 0;
+
+        }
+
+
+        if (
+            building.occupancy >
+            building.capacity
+        ) {
+
+            building.occupancy =
+                building.capacity;
+
+        }
+
+
+
+        /* Temperature */
+
+        building.temperature +=
+            (Math.random() - 0.5) * 0.4;
+
+
+
+        /* Energy */
+
+        building.energy +=
+            (Math.random() - 0.5) * 3;
+
+
+        if (building.energy < 10) {
+
+            building.energy = 10;
+
+        }
+
+
+        /* Update building color */
+
+        updateBuildingColor(name);
+
+    }
+
+
+    updateDashboard();
+
+}
+
+
+
+/* ===========================
+   CHANGE BUILDING COLOR
+=========================== */
+
+
+function updateBuildingColor(name) {
+
+
+    let id;
+
+
+    if (name === "CSE Building")
+        id = "cse";
+
+    if (name === "ECE Building")
+        id = "ece";
+
+    if (name === "Library")
+        id = "library";
+
+    if (name === "Innovation Lab")
+        id = "lab";
+
+
+    let element =
+        document.getElementById(id);
+
+
+    let building =
+        buildings[name];
+
+
+    let percentage =
+        (building.occupancy /
+        building.capacity) * 100;
+
+
+    element.classList.remove(
+        "normal",
+        "warning",
+        "critical"
+    );
+
+
+    if (percentage >= 90) {
+
+        element.classList.add(
+            "critical"
+        );
+
+    }
+
+    else if (percentage >= 70) {
+
+        element.classList.add(
+            "warning"
+        );
+
+    }
+
+    else {
+
+        element.classList.add(
+            "normal"
+        );
+
+    }
+
+}
+
+
+
+/* ===========================
+   START SIMULATION
+=========================== */
+
+
+updateDashboard();
+
+
+setInterval(
+    simulateSensors,
+    3000
+);
+
+
+</script>
+
+
+</body>
+
+</html>
